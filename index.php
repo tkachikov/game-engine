@@ -1,3 +1,10 @@
+<?php
+declare(strict_types=1);
+require_once('vendor/autoload.php');
+session_start();
+
+\App\Player::setPlayers(session_id());
+?>
 <!doctype html>
 <html>
     <head>
@@ -6,6 +13,7 @@
     <body>
         <img id="frame" width="1000" height="1000" onkeydown="keyPress(event)" tabindex="0">
         <script>
+            const id = '<?= session_id() ?>';
             const image = document.getElementById('frame');
             function updateImage(binary) {
                 image.src = '';
@@ -13,13 +21,14 @@
             }
             function keyPress(event) {
                 axios.post('actions.php', {
+                    id: id,
                     x: event.clientX,
                     y: event.clientY,
                     code: event.code,
                 });
             }
             setInterval(function () {
-                axios.get('game.php?binary').then((response) => updateImage(response.data));
+                axios.get('game.php?binary&id='+id).then((response) => updateImage(response.data));
             }, 50)
         </script>
     </body>

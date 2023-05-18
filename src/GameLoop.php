@@ -9,10 +9,12 @@ class GameLoop
     {
         $items = [
             Ball::class,
-            Player::class,
             Action::class,
         ];
         while (true) {
+            foreach (Player::getPlayers() as $id => $value) {
+                (new Player($id))->run();
+            }
             foreach ($items as $item) {
                 (new $item)->run();
             }

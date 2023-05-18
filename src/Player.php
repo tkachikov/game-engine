@@ -9,15 +9,16 @@ class Player
 
     private array $data;
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly string $id,
+    ) {
         $this->redis = new Redis();
-        $this->data = $this->redis->get('player') ?? $this->newData();
+        $this->data = $this->redis->get('player-'.$this->id) ?? $this->newData();
     }
 
     public function __destruct()
     {
-        $this->redis->set('player', $this->data);
+        $this->redis->set('player-'.$this->id, $this->data);
     }
 
     /**
@@ -41,8 +42,16 @@ class Player
             'width' => 100,
             'height' => 100,
             'speed' => 50,
-            'color' => [0, 200, 0],
+            'color' => $this->getColor(),
         ];
+    }
+
+    /**
+     * @return array
+     */
+    public function getColor(): array
+    {
+        return [rand(0, 255), rand(0, 255), rand(0, 255)];
     }
 
     /**
@@ -74,5 +83,26 @@ class Player
     {
         $color = imagecolorallocate($image, ...$this->color);
         imagefilledellipse($image, $this->x, $this->y, $this->width, $this->height, $color);
+    }
+
+    /**
+     * @param string $id
+     *
+     * @return void
+     */
+    public static function setPlayers(string $id): void
+    {
+        $redis = new Redis();
+        $players = self::getPlayers();
+        $players[$id] = true;
+        $redis->set('players', $players);
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPlayers(): array
+    {
+        return (new Redis())->get('players') ?? [];
     }
 }

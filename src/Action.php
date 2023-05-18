@@ -21,15 +21,16 @@ class Action
     }
 
     /**
+     * @param string $id
      * @param string $code
-     * @param int    $x
-     * @param int    $y
+     * @param int $x
+     * @param int $y
      *
      * @return void
      */
-    public function add(string $code, int $x, int $y): void
+    public function add(string $id, string $code, int $x, int $y): void
     {
-        $this->data[] = [
+        $this->data[$id][] = [
             'code' => $code,
             'x' => $x,
             'y' => $y,
@@ -41,22 +42,24 @@ class Action
      */
     public function run(): void
     {
-        $actions = $this->data;
+        $data = $this->data;
         $this->redis->set('actions', $this->data = []);
-        foreach ($actions as $action) {
-            switch ($action['code']) {
-                case 'ArrowRight':
-                    (new Player())->move(x: 1);
-                    break;
-                case 'ArrowLeft':
-                    (new Player())->move(x: -1);
-                    break;
-                case 'ArrowUp':
-                    (new Player())->move(y: -1);
-                    break;
-                case 'ArrowDown':
-                    (new Player())->move(y: 1);
-                    break;
+        foreach ($data as $id => $actions) {
+            foreach ($actions as $action) {
+                switch ($action['code']) {
+                    case 'ArrowRight':
+                        (new Player($id))->move(x: 1);
+                        break;
+                    case 'ArrowLeft':
+                        (new Player($id))->move(x: -1);
+                        break;
+                    case 'ArrowUp':
+                        (new Player($id))->move(y: -1);
+                        break;
+                    case 'ArrowDown':
+                        (new Player($id))->move(y: 1);
+                        break;
+                }
             }
         }
     }
